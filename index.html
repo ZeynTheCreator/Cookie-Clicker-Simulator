@@ -213,7 +213,7 @@
       cursor: pointer;
       transition: transform 0.1s ease-in-out;
       filter: drop-shadow(0 0 15px rgba(138, 83, 41, 0.5));
-      background-image: url('https://i.imgur.com/2FEcsUZ.png');
+      background-image: url('https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/325/cookie-1f36a.png');
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -240,7 +240,7 @@
       display: none;
       filter: drop-shadow(0 0 15px gold);
       animation: float 2s infinite alternate ease-in-out;
-      background-image: url('https://i.imgur.com/2FEcsUZ.png');
+      background-image: url('https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/325/golden-cookie-1f36e.png');
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -547,7 +547,7 @@
     let totalCookiesBaked = 0;
     let autoCookiesPerSecond = 0;
     
-    // Upgrade variables
+    // Upgrade variables - Updated to match HTML IDs
     const upgrades = {
       cursor: { cost: 10, cps: 1, owned: 0 },
       grandma: { cost: 100, cps: 5, owned: 0 },
@@ -555,16 +555,16 @@
       mine: { cost: 1000, cps: 50, owned: 0 },
       bank: { cost: 5000, cps: 100, owned: 0 },
       temple: { cost: 10000, cps: 500, owned: 0 },
-      wizardTower: { cost: 50000, cps: 2500, owned: 0 },
+      'wizard-tower': { cost: 50000, cps: 2500, owned: 0 }, // Changed to match HTML ID
       shipment: { cost: 100000, cps: 10000, owned: 0 },
-      alchemyLab: { cost: 500000, cps: 50000, owned: 0 },
+      'alchemy-lab': { cost: 500000, cps: 50000, owned: 0 }, // Changed to match HTML ID
       portal: { cost: 1000000, cps: 250000, owned: 0 },
-      timeMachine: { cost: 5000000, cps: 1000000, owned: 0 },
-      antimatterCondenser: { cost: 10000000, cps: 5000000, owned: 0 },
+      'time-machine': { cost: 5000000, cps: 1000000, owned: 0 }, // Changed to match HTML ID
+      'antimatter-condenser': { cost: 10000000, cps: 5000000, owned: 0 }, // Changed to match HTML ID
       prism: { cost: 50000000, cps: 25000000, owned: 0 },
       charm: { cost: 100000000, cps: 125000000, owned: 0 },
-      cookieBreeder: { cost: 500000000, cps: 625000000, owned: 0 },
-      antimatterRay: { cost: 1000000000, cps: 3125000000, owned: 0 }
+      'cookie-breeder': { cost: 500000000, cps: 625000000, owned: 0 }, // Changed to match HTML ID
+      'antimatter-ray': { cost: 1000000000, cps: 3125000000, owned: 0 } // Changed to match HTML ID
     };
     
     // DOM Elements
@@ -635,25 +635,18 @@
     
     // Setup upgrade buttons with proper event listeners
     function setupUpgradeButtons() {
-      const upgradeIds = [
-        'cursor-upgrade', 'grandma-upgrade', 'factory-upgrade', 'mine-upgrade', 'bank-upgrade', 'temple-upgrade',
-        'wizard-tower-upgrade', 'shipment-upgrade', 'alchemy-lab-upgrade', 'portal-upgrade', 'time-machine-upgrade',
-        'antimatter-condenser-upgrade', 'prism-upgrade', 'charm-upgrade', 'cookie-breeder-upgrade', 'antimatter-ray-upgrade'
-      ];
-      const upgradeTypes = [
-        'cursor', 'grandma', 'factory', 'mine', 'bank', 'temple', 'wizardTower', 'shipment', 'alchemyLab', 'portal',
-        'timeMachine', 'antimatterCondenser', 'prism', 'charm', 'cookieBreeder', 'antimatterRay'
-      ];
-      
-      upgradeIds.forEach((id, index) => {
-        const button = document.getElementById(id);
+      // For each upgrade in the upgrades object
+      Object.keys(upgrades).forEach(type => {
+        const buttonId = `${type}-upgrade`;
+        const button = document.getElementById(buttonId);
+        
         if (button) {
           // Add event listener
           button.addEventListener('click', function() {
-            buyUpgrade(upgradeTypes[index]);
+            buyUpgrade(type);
           });
         } else {
-          console.error(`Button ${id} not found!`);
+          console.error(`Button ${buttonId} not found!`);
         }
       });
     }
@@ -716,25 +709,28 @@
       if (goldenCookieElement.style.display === 'none' || goldenCookieElement.style.display === '') {
         goldenCookieElement.style.display = 'block';
         
-        // Random position within the main content area
+        // Fix random position to actually appear within view
         const mainContent = document.querySelector('.main-content');
         if (mainContent) {
           const rect = mainContent.getBoundingClientRect();
           
-          const maxX = rect.width - 80;
-          const maxY = rect.height - 80;
+          const maxX = rect.width - 100;
+          const maxY = rect.height - 100;
           
-          const randomX = Math.floor(Math.random() * maxX);
-          const randomY = Math.floor(Math.random() * maxY);
+          const randomX = Math.max(20, Math.floor(Math.random() * maxX));
+          const randomY = Math.max(20, Math.floor(Math.random() * maxY));
           
           goldenCookieElement.style.position = 'absolute';
           goldenCookieElement.style.left = `${randomX}px`;
           goldenCookieElement.style.top = `${randomY}px`;
+          goldenCookieElement.style.zIndex = '1000'; // Ensure it's visible
         }
         
         // Hide after 10 seconds if not clicked
         setTimeout(() => {
-          goldenCookieElement.style.display = 'none';
+          if (goldenCookieElement) {
+            goldenCookieElement.style.display = 'none';
+          }
         }, 10000);
       }
     }
@@ -762,123 +758,62 @@
       updateUI();
     }
     
-    // Upgrade functions
-    function canAfford(cost) {
-      return cookies >= cost;
-    }
-    
+    // Buy an upgrade
     function buyUpgrade(type) {
-      const upgrade = upgrades[type];
-      
-      if (canAfford(upgrade.cost)) {
-        cookies -= upgrade.cost;
-        upgrade.owned++;
-        autoCookiesPerSecond += upgrade.cps;
-        
-        // Increase cost for next purchase
-        upgrade.cost = Math.ceil(upgrade.cost * 1.15);
-        
-        // Show floating text
-        const upgradeButton = document.getElementById(`${type}-upgrade`);
-        if (upgradeButton) {
-          createFloatingText(`+${upgrade.cps} CPS`, upgradeButton);
-        }
+      if (upgrades[type].cost <= cookies) {
+        cookies -= upgrades[type].cost;
+        autoCookiesPerSecond += upgrades[type].cps;
+        upgrades[type].owned++;
+        upgrades[type].cost = Math.floor(upgrades[type].cost * 1.15); // Increase cost by 15%
         
         // Update UI
         updateUI();
       }
     }
     
-    // Check achievements
-    function checkAchievements() {
-      if (!achievementList) return;
+    // Update the UI based on game state
+    function updateUI() {
+      cookieCountElement.textContent = `${cookies.toLocaleString()} cookies`;
+      cookiesPerSecondElement.textContent = `${autoCookiesPerSecond.toLocaleString()} cookies per second`;
+      totalCookiesElement.textContent = `Total Baked: ${totalCookiesBaked.toLocaleString()}`;
       
+      // Update upgrade buttons
+      Object.keys(upgrades).forEach(type => {
+        const button = document.getElementById(`${type}-upgrade`);
+        if (button) {
+          button.textContent = `${upgrades[type].cost.toLocaleString()} cookies`;
+          if (cookies >= upgrades[type].cost) {
+            button.classList.add('enabled');
+          } else {
+            button.classList.remove('enabled');
+          }
+        }
+      });
+    }
+    
+    // Check for achievements
+    function checkAchievements() {
       achievements.forEach(achievement => {
         if (!achievement.achieved && achievement.condition()) {
           achievement.achieved = true;
-          
-          // Create and add achievement to the list
-          const li = document.createElement('li');
-          li.innerHTML = `${achievement.name} - ${achievement.description}`;
-          
-          // Check if this achievement is already in the list
-          const existingAchievements = Array.from(achievementList.children);
-          const alreadyExists = existingAchievements.some(item => 
-            item.textContent.includes(achievement.name)
-          );
-          
-          if (!alreadyExists) {
-            achievementList.appendChild(li);
-            
-            // Create a notification
-            const achievementSection = document.querySelector('.achievements-section');
-            if (achievementSection) {
-              createFloatingText('🏆 Achievement Unlocked!', achievementSection);
-            }
-          }
+          const listItem = document.createElement('li');
+          listItem.textContent = `${achievement.name} - ${achievement.description}`;
+          achievementList.appendChild(listItem);
         }
       });
     }
     
-    // Theme functions
+    // Set theme
     function setTheme(theme) {
-      if (theme === 'dark') {
-        document.body.classList.add('dark-theme');
-      } else {
+      if (theme === 'light') {
         document.body.classList.remove('dark-theme');
+      } else if (theme === 'dark') {
+        document.body.classList.add('dark-theme');
       }
     }
     
-    // Format numbers with comma separators
-    function formatNumber(num) {
-      return num.toLocaleString();
-    }
-    
-    // Update UI elements
-    function updateUI() {
-      // Update cookie count and stats
-      if (cookieCountElement) {
-        cookieCountElement.textContent = `${formatNumber(Math.floor(cookies))} cookies`;
-      }
-      
-      if (cookiesPerSecondElement) {
-        cookiesPerSecondElement.textContent = `${formatNumber(autoCookiesPerSecond)} cookies per second`;
-      }
-      
-      if (totalCookiesElement) {
-        totalCookiesElement.textContent = `Total Baked: ${formatNumber(Math.floor(totalCookiesBaked))}`;
-      }
-      
-      // Update upgrade buttons
-      Object.entries(upgrades).forEach(([type, upgrade]) => {
-        const button = document.getElementById(`${type}-upgrade`);
-        if (button) {
-          button.textContent = `${formatNumber(upgrade.cost)}`;
-          
-          // Add owned counter if any owned
-          if (upgrade.owned > 0) {
-            button.textContent += ` (${upgrade.owned})`;
-          }
-          
-          // Enable/disable based on affordability
-          if (canAfford(upgrade.cost)) {
-            button.classList.add('enabled');
-            button.classList.remove('disabled');
-          } else {
-            button.classList.remove('enabled');
-            button.classList.add('disabled');
-          }
-        }
-      });
-    }
-    
-    // Start the game when page is fully loaded
-    document.addEventListener('DOMContentLoaded', init);
-    
-    // If document is already loaded, initialize immediately
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      setTimeout(init, 1);
-    }
+    // Initialize the game when the page loads
+    window.onload = init;
   </script>
 </body>
 </html>
